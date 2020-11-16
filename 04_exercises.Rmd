@@ -98,8 +98,9 @@ These exercises will reiterate what you learned in the "Mapping data with R" tut
 
   1. Add the `Starbucks` locations to a world map. Add an aesthetic to the world map that sets the color of the points according to the ownership type. What, if anything, can you deduce from this visualization?  
 
+Most Starbucks locations are in North America and are typically Company Owned, JVs, or Licensed. Most franchise Starbucks are located in Europe. There is a high concentration of JVs in Eastern Asia. It is difficult to deduce much from this visualization because the map is so small and there are so many points, making it hard to differentiate. 
+
 ```{r}
-summary(Starbucks)
 world <- get_stamenmap(
     bbox = c(left = -180, bottom = -57, right = 179, top = 82.1), 
     maptype = "terrain",
@@ -108,14 +109,36 @@ world <- get_stamenmap(
 
 ggmap(world) + 
   geom_point(data = Starbucks, 
-             aes(x = Longitude, y = Latitude, color = "Ownership Type"), 
+             aes(x = Longitude, y = Latitude, color = `Ownership Type`), 
              alpha = .3, 
              size = .1) +
+  scale_colour_manual(values = c("Company Owned" = "black", "Franchise" = "red", "Joint Venture" = "blue", "Licensed" = "pink"))
   theme_map()
 ```
 
 
-  2. Construct a new map of Starbucks locations in the Twin Cities metro area (approximately the 5 county metro area).  
+  2. Construct a new map of Starbucks locations in the Twin Cities metro area (approximately the 5 county metro area). 
+
+```{r}
+Starbucks2 <- Starbucks %>%
+  filter(City == c("Minneapolis", "Saint Paul"))
+
+
+world <- get_stamenmap(
+    bbox = c(left = -180, bottom = -57, right = 179, top = 82.1), 
+    maptype = "terrain",
+    zoom = 2)
+
+
+ggmap(world) + 
+  geom_point(data = Starbucks2, 
+             aes(x = Longitude, y = Latitude, color = `Ownership Type`), 
+             alpha = .3, 
+             size = .1) +
+  scale_colour_manual(values = c("Company Owned" = "black", "Franchise" = "red", "Joint Venture" = "blue", "Licensed" = "pink"))
+  theme_map()
+```
+
 
   3. In the Twin Cities plot, play with the zoom number. What does it do?  (just describe what it does - don't actually include more than one map).  
 
