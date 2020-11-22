@@ -463,11 +463,63 @@ leaflet(data = MplsStops,
 
 ```{r}
 mpls_nbhd <- st_read("Minneapolis_Neighborhoods/Minneapolis_Neighborhoods.shp", quiet = TRUE)
+
+mpls_all <- mpls_nbhd %>% 
+  st_as_sf(coords = c("long", "lat"), crs = "NAD27") %>% 
+  group_by(BDNAME) %>% 
+  summarise(geometry = st_combine(geometry)) %>% 
+  st_cast("POLYGON") %>% 
+  left_join(mpls_suspicious,
+            by = c("BDNAME" = "neighborhood")) %>% 
+  left_join(MplsDemo,
+            by = c("BDNAME" = "neighborhood"))
 ```
 
   17. Use `leaflet` to create a map from the `mpls_all` data  that colors the neighborhoods by `prop_suspicious`. Display the neighborhood name as you scroll over it. Describe what you observe in the map.
+
+```{r}
+palette_mpls_all <- colorNumeric("Blues", domain = mpls_all$prop_sus) 
+
+leaflet(data = mpls_all) %>% 
+  addProviderTiles(providers$Esri.WorldStreetMap) %>% 
+  addPolygons(label = ~BDNAME,
+              fillColor = ~palette_mpls_all(prop_sus),
+              stroke = FALSE,
+             fillOpacity = .8, 
+             highlight = highlightOptions(color = "block",
+                                          fillOpacity = .9,
+                                          bringToFront = FALSE)) %>% 
+  addLegend(pal = palette_mpls_all, 
+            values = ~prop_sus, 
+            opacity = 0.5, 
+            title = NULL,
+            position = "bottomright")
+```
+
   
   18. Use `leaflet` to create a map of your own choosing. Come up with a question you want to try to answer and use the map to help answer that question. Describe what your map shows. 
+  
+This map shows the proportion of stops on people that had college degrees. Areas like Phillips West had a low proportion of stops on college grads (20-30%). Western parts of the twin cities had high (70-80%+) that had college degrees. This map could be slightly misleading because it is largely dependent on the proportion of the overall population in a specific area that has a college degree.  
+
+```{r}
+palette_mpls_all2 <- colorNumeric("Blues", domain = mpls_all$collegeGrad) 
+
+leaflet(data = mpls_all) %>% 
+  addProviderTiles(providers$Esri.WorldStreetMap) %>% 
+  addPolygons(label = ~BDNAME,
+              fillColor = ~palette_mpls_all(collegeGrad),
+              stroke = FALSE,
+             fillOpacity = .8, 
+             highlight = highlightOptions(color = "block",
+                                          fillOpacity = .9,
+                                          bringToFront = FALSE)) %>% 
+  addLegend(pal = palette_mpls_all2, 
+            values = ~collegeGrad, 
+            opacity = 0.5, 
+            title = NULL,
+            position = "bottomright")
+```
+
   
   
 ## GitHub link
